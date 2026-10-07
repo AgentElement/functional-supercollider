@@ -1,13 +1,13 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
+
 use async_std::task::{block_on, spawn};
 use futures::{stream::FuturesUnordered, StreamExt};
 use lambda_calculus::reduction::Order::HAP;
 use lambda_calculus::{
     abs, app,
     combinators::{I, K, S},
-    data::{
-        boolean::{self, and},
-        num::church::{add, eq, succ},
-    },
+    data::num::church::{add, eq, succ},
     parse,
     term::Notation::Classic,
     IntoChurchNum,
@@ -17,7 +17,6 @@ use rand::random;
 
 use crate::{
     config::{self, ConfigSeed},
-    generators::BTreeGen,
     lambda::recursive::{has_two_args, is_truthy, uses_both_arguments, LambdaSoup},
     utils::{dump_series_to_file, read_inputs},
 };
@@ -46,29 +45,8 @@ pub fn addtwo() -> Term {
     comp
 }
 
-// Triplet permutation combinators
-fn p123() -> Term {
-    abs!(3, app!(Var(1), Var(2), Var(3)))
-}
-
 fn p132() -> Term {
     abs!(3, app!(Var(1), Var(3), Var(2)))
-}
-
-fn p213() -> Term {
-    abs!(3, app!(Var(2), Var(1), Var(3)))
-}
-
-fn p231() -> Term {
-    abs!(3, app!(Var(2), Var(3), Var(1)))
-}
-
-fn p312() -> Term {
-    abs!(3, app!(Var(3), Var(1), Var(2)))
-}
-
-fn p321() -> Term {
-    abs!(3, app!(Var(3), Var(2), Var(1)))
 }
 
 pub(super) fn test_add(a: usize, b: usize) -> Term {
@@ -85,45 +63,11 @@ pub(super) fn test_add(a: usize, b: usize) -> Term {
     test
 }
 
-fn test_add_seq(pairs: impl Iterator<Item = (usize, usize)>) -> Term {
-    let mut test = parse(r"\f. \a. \b. a", Classic).unwrap();
-    for (u, v) in pairs {
-        let gut = parse(
-            r"\and. \test. \testadd. \f. and (test f) (testadd f)",
-            Classic,
-        )
-        .unwrap();
-        test = app!(gut, and(), test, test_add(u, v));
-    }
-    test.reduce(lambda_calculus::HAP, 0);
-    let mut comp = app!(test.clone(), add());
-    comp.reduce(lambda_calculus::HAP, 0);
-    assert!(comp.is_isomorphic_to(&boolean::tru()));
-    test
-}
-
 pub(super) fn test_succ(a: usize) -> Term {
     let mut test = parse(r"\eq. \a. \asucc. \f. (eq (f a) asucc)", Classic).unwrap();
     test = app!(test, eq(), a.into_church(), (a + 1).into_church());
     // `test` has type (church -> church) -> bool
     test.reduce(lambda_calculus::HAP, 0);
-    test
-}
-
-pub(super) fn test_succ_seq(nums: impl Iterator<Item = usize>) -> Term {
-    let mut test = parse(r"\f. \a. \b. a", Classic).unwrap();
-    for u in nums {
-        let gut = parse(
-            r"\and. \test. \testscc. \f. and (test f) (testscc f)",
-            Classic,
-        )
-        .unwrap();
-        test = app!(gut, and(), test, test_succ(u));
-    }
-    test.reduce(lambda_calculus::HAP, 0);
-    let mut comp = app!(test.clone(), succ());
-    comp.reduce(lambda_calculus::HAP, 0);
-    assert!(comp.is_isomorphic_to(&boolean::tru()));
     test
 }
 
@@ -133,28 +77,6 @@ pub fn test_addtwo(a: usize) -> Term {
     // `test` has type (church -> church) -> bool
     test.reduce(lambda_calculus::HAP, 0);
     test
-}
-
-fn generate_sample_for_addsearch(seed: ConfigSeed) -> Vec<Term> {
-    let mut sample = vec![S(); 200];
-    sample.append(&mut vec![K(); 100]);
-    sample.append(&mut vec![I(); 100]);
-    for size in 5..12 {
-        let mut gen = BTreeGen::from_config(&config::BTreeGen {
-            size,
-            freevar_generation_probability: 0.2,
-            standardization: crate::generators::Standardization::Prefix,
-            n_max_free_vars: 6,
-            seed,
-        });
-        let n_samples = match size {
-            5..=7 => 800,
-            8..=10 => 400,
-            _ => 200,
-        };
-        sample.append(&mut gen.generate_n(n_samples))
-    }
-    sample
 }
 
 pub(super) fn asymmetric_skip_sample() -> Vec<Term> {
@@ -367,12 +289,11 @@ pub fn succ_search_with_test() {
     }
 }
 
+#[cfg(test)]
 mod tests {
-    use lambda_calculus::{
-        app, data::boolean::tru, data::num::church::add, reduction::Order::HNO, IntoChurchNum,
-    };
+    use lambda_calculus::{app, data::boolean::tru, data::num::church::add, reduction::Order::HNO};
 
-    use crate::experiments::magic_test_function::{addtwo, test_addtwo, test_succ};
+    use crate::experiments::magic_test_function::{addtwo, test_addtwo};
 
     use super::test_add;
 

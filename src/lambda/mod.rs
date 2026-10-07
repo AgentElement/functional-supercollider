@@ -1,4 +1,4 @@
-pub mod lambda;
+pub mod core;
 
 pub mod recursive;
 

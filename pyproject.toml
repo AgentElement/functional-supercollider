@@ -1,0 +1,20 @@
+[build-system]
+requires = ["maturin>=1,<2"]
+build-backend = "maturin"
+
+[project]
+name = "alchemy"
+dynamic = ["version"]         # ← pull version from Cargo.toml
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+
+[tool.maturin]
+# maturin will use the crate name & version from Cargo.toml
+# (Optional) If your Python sources live in ./python/, you can mirror your Cargo metadata:
+# python-source = "python"
+# (Optional) Explicit module name if you want to force it:
+# module-name = "alchemy"

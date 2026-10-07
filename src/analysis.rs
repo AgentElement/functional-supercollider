@@ -58,12 +58,19 @@ impl LambdaSoup {
         let selfcounts = self.expression_counts();
         let othercounts = other.expression_counts();
 
-        let mut intersection = 0;
+        let mut intersection: u32 = 0;
         for (k, v) in selfcounts {
             if let Some(c) = othercounts.get(&k) {
                 intersection += c.min(&v);
             }
         }
-        (intersection as f32) / ((self.len() + other.len()) as f32)
+        // Jaccard for multisets: |A ∩ B| / |A ∪ B|,
+        // where ∩ is sum of mins and ∪ is sum of maxes.
+        // Using identity: sum(max) = |A| + |B| - sum(min).
+        let union = self.len() + other.len() - intersection as usize;
+        if union == 0 {
+            return 1.0; // both empty → treat as identical
+        }
+        (intersection as f32) / (union as f32)
     }
 }

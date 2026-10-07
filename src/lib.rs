@@ -1,20 +1,19 @@
-/// Simulation analysis
+// src/lib.rs
+use pyo3::prelude::*;
+
+// Re-export your Rust modules for the CLI and for external users
 pub mod analysis;
-
-/// Global configuration
 pub mod config;
-
-/// Random expression generators
-pub mod generators;
-
-/// Main AlChemy simulation module
-pub mod supercollider;
-
-/// Experimental stuff
 pub mod experiments;
-
-/// Utilities
+pub mod generators;
+pub mod lambda;
+pub mod supercollider;
 pub mod utils;
 
-/// Lambda-calculus stuff
-pub mod lambda;
+// New Python wrapper module
+mod python;
+
+#[pymodule]
+fn alchemy(_py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
+    python::register(m)
+}

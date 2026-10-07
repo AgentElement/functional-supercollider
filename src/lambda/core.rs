@@ -157,7 +157,7 @@ impl AlchemyCollider {
 
             let expr = LambdaParticle { expr };
 
-            collision_results.push((expr, size, n))
+            collision_results.push((expr, n, size))
         }
         Ok(LambdaCollisionOk {
             results: collision_results.iter().map(|t| t.0.clone()).collect(),
@@ -244,6 +244,12 @@ impl std::error::Error for LambdaCollisionError {}
 impl fmt::Display for LambdaParticle {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&format!("{:?}", self.expr), f)
+    }
+}
+
+impl Default for LambdaSoup {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

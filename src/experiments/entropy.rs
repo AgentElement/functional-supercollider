@@ -1,3 +1,6 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
+
 use async_std::task::{block_on, spawn};
 use futures::{stream::FuturesUnordered, StreamExt};
 use lambda_calculus::Term;

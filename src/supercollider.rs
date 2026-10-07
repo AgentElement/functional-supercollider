@@ -27,6 +27,17 @@ where
     fn count(&self) -> usize;
 }
 
+/// A single logged reaction event, capturing parents, products, and outcome.
+#[derive(Debug, Clone)]
+pub struct ReactionRecord<P: Clone> {
+    pub step: usize,
+    pub left: P,
+    pub right: P,
+    pub products: Vec<P>,
+    pub success: bool,
+    pub error: Option<String>,
+}
+
 /// The principal AlChemy object. The `Soup` struct contains a set of
 /// lambda expressions, and rules for composing and filtering them.
 #[derive(Debug, Clone)]
@@ -98,6 +109,81 @@ where
         }
 
         result.clone()
+    }
+
+    /// Produce one atomic reaction and return a full record of who
+    /// reacted with whom to produce what.
+    pub fn react_logged(&mut self, step: usize) -> ReactionRecord<P> {
+        let n_expr = self.expressions.len();
+
+        let i = self.rng.gen_range(0..n_expr);
+        let left = self.expressions.swap_remove(i);
+
+        let j = self.rng.gen_range(0..n_expr - 1);
+        let right = self.expressions.swap_remove(j);
+
+        let result = self.collider.collide(left.clone(), right.clone());
+
+        let record = match &result {
+            Ok(ref t) => {
+                let products: Vec<P> = t.particles().collect();
+                self.perturb(products.iter().cloned());
+
+                if self.maintain_constant_population_size {
+                    for _ in 0..t.count() {
+                        let k = self.rng.gen_range(0..self.expressions.len());
+                        self.expressions.swap_remove(k);
+                    }
+                }
+
+                ReactionRecord {
+                    step,
+                    left: left.clone(),
+                    right: right.clone(),
+                    products,
+                    success: true,
+                    error: None,
+                }
+            }
+            Err(ref e) => ReactionRecord {
+                step,
+                left: left.clone(),
+                right: right.clone(),
+                products: vec![],
+                success: false,
+                error: Some(format!("{}", e)),
+            },
+        };
+
+        if !self.discard_parents {
+            self.expressions.push(left);
+            self.expressions.push(right);
+        }
+
+        record
+    }
+
+    /// Simulate for `n` collisions, returning a full reaction log.
+    /// Note: this allocates a Vec of n records. For very large n,
+    /// consider using `simulate_for_logged_filtered` instead.
+    pub fn simulate_for_logged(&mut self, n: usize) -> Vec<ReactionRecord<P>> {
+        let mut log = Vec::with_capacity(n);
+        for step in 0..n {
+            log.push(self.react_logged(step));
+        }
+        log
+    }
+
+    /// Simulate for `n` collisions, returning only successful reaction records.
+    pub fn simulate_for_logged_filtered(&mut self, n: usize) -> Vec<ReactionRecord<P>> {
+        let mut log = Vec::new();
+        for step in 0..n {
+            let record = self.react_logged(step);
+            if record.success {
+                log.push(record);
+            }
+        }
+        log
     }
 
     fn log_message_from_reaction(reaction: &Result<T, E>) -> String {
@@ -221,6 +307,10 @@ where
     /// Get the number of expressions in the soup.
     pub fn len(&self) -> usize {
         self.expressions.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.expressions.is_empty()
     }
 
     /// Get the number of successful collisions

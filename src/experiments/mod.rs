@@ -1,3 +1,6 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
+
 pub mod entropy;
 
 pub mod search_by_behavior;

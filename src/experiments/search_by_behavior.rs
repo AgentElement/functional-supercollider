@@ -1,3 +1,6 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
+
 use async_std::task::{block_on, spawn};
 use futures::{stream::FuturesUnordered, StreamExt};
 use lambda_calculus::{app, Term};
@@ -124,7 +127,7 @@ pub fn look_for_xorset() {
             i,
             run_length,
             polling_interval,
-            xorset_test
+            xorset_test,
         )));
     }
 
@@ -153,7 +156,7 @@ pub fn look_for_not_xorset() {
             i,
             run_length,
             polling_interval,
-            not_xorset_test
+            not_xorset_test,
         )));
     }
 

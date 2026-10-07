@@ -94,8 +94,8 @@ fn uses_both_arguments_helper(expr: &Term, depth: usize) -> (bool, bool) {
         Term::Abs(ref boxed) => uses_both_arguments_helper(boxed, depth + 1),
         Term::App(ref boxed) => {
             let (ref left, ref right) = **boxed;
-            let (l0, l1) = uses_both_arguments_helper(&left, depth);
-            let (r0, r1) = uses_both_arguments_helper(&right, depth);
+            let (l0, l1) = uses_both_arguments_helper(left, depth);
+            let (r0, r1) = uses_both_arguments_helper(right, depth);
             (l0 || r0, l1 || r1)
         }
         Term::Var(n) => (*n == depth, *n == depth - 1),
@@ -224,7 +224,7 @@ impl AlchemyCollider {
                 recursive: false,
             };
 
-            collision_results.push((expr, size, n))
+            collision_results.push((expr, n, size))
         }
         Ok(LambdaCollisionOk {
             results: collision_results.iter().map(|t| t.0.clone()).collect(),
@@ -257,11 +257,11 @@ impl Collider<LambdaParticle, LambdaCollisionOk, LambdaCollisionError> for Alche
         left: LambdaParticle,
         right: LambdaParticle,
     ) -> Result<LambdaCollisionOk, LambdaCollisionError> {
-        return if left.recursive {
+        if left.recursive {
             self.recursive_collide(left, right)
         } else {
             self.nonrecursive_collide(left, right)
-        };
+        }
     }
 }
 

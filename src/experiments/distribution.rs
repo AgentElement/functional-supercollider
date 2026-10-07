@@ -1,3 +1,6 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
+
 use std::collections::HashMap;
 
 use lambda_calculus::Term;

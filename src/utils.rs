@@ -8,7 +8,7 @@ use std::io::{self, BufRead, BufReader, Write};
 // This was shamelessly stolen from
 // https://play.rust-lang.org/?version=stable&mode=debug&edition=2015&gist=e241493d100ecaadac3c99f37d0f766f
 pub fn decode_hex(s: &str) -> Result<Vec<u8>, DecodeHexError> {
-    if s.len() % 2 != 0 {
+    if s.len() & 1 == 1 {
         Err(DecodeHexError::OddLength)
     } else {
         (0..s.len())
@@ -97,7 +97,7 @@ where
     U: Ord,
 {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.priority.cmp(&other.priority))
+        Some(self.cmp(other))
     }
 }
 
@@ -144,6 +144,6 @@ where
     for i in series {
         write!(file, "{:?}; ", i)?;
     }
-    write!(file, "\n")?;
+    writeln!(file)?;
     Ok(())
 }

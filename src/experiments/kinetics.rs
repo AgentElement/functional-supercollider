@@ -1,3 +1,6 @@
+#![allow(clippy::all)]
+#![allow(warnings)]
+
 use async_std::task::{block_on, spawn};
 use futures::stream::{FuturesUnordered, StreamExt};
 use lambda_calculus::{data::num::church::succ, Term};
@@ -131,8 +134,13 @@ pub fn kinetic_succ_experiment() {
     let mut futures = FuturesUnordered::new();
 
     let sample_size = 5000;
-    let good_fracs = [0.0, 0.0002, 0.0004, 0.0008, 0.0016, 0.0032, 0.0064, 0.0128, 0.0256, 0.0512, 0.1024];
-    let test_fracs = [0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80];
+    let good_fracs = [
+        0.0, 0.0002, 0.0004, 0.0008, 0.0016, 0.0032, 0.0064, 0.0128, 0.0256, 0.0512, 0.1024,
+    ];
+    let test_fracs = [
+        0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70,
+        0.75, 0.80,
+    ];
 
     for (i, good_frac) in good_fracs.iter().enumerate() {
         for (j, test_frac) in test_fracs.iter().enumerate() {
